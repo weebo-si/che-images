@@ -1,0 +1,41 @@
+version: "3"
+
+vars:
+  REPO: weebo-si/che-images
+  REGISTRY: ghcr.io/weebo-si
+  REF: '{{.REF | default "feat/forgejo-gitservice"}}'
+  TAG: '{{.REF | replace "/" "-"}}'
+  IMAGES: che-server che-operator che-dashboard
+
+tasks:
+  build:
+    desc: "Trigger the image build on GitHub Actions (usage: task images:build [REF=feat/forgejo-gitservice] [PLATFORMS=linux/amd64])"
+    cmds:
+      - gh workflow run build.yml -R {{.REPO}} -f ref={{.REF}} -f platforms={{.PLATFORMS | default "linux/amd64"}}
+      - echo "Follow it with 'task images:watch'"
+
+  watch:
+    desc: "Follow the latest build run"
+    cmds:
+      - |
+        id=$(gh run list -R {{.REPO}} -w build.yml -L 1 --json databaseId --jq '.[0].databaseId')
+        gh run watch "$id" -R {{.REPO}} --exit-status
+
+  verify:
+    desc: "Verify the cosign signature of every image (usage: task images:verify [REF=...])"
+    cmds:
+      - |
+        for img in {{.IMAGES}}; do
+          cosign verify "{{.REGISTRY}}/$img:{{.TAG}}" \
+            --certificate-identity-regexp '^https://github.com/{{.REPO}}/' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com >/dev/null \
+            && echo "✔ $img:{{.TAG}}" || echo "✘ $img:{{.TAG}}"
+        done
+
+  scan:
+    desc: "Scan the published images for HIGH/CRITICAL CVE with trivy (usage: task images:scan [REF=...])"
+    cmds:
+      - |
+        for img in {{.IMAGES}}; do
+          trivy image --quiet --severity HIGH,CRITICAL --ignore-unfixed "{{.REGISTRY}}/$img:{{.TAG}}"
+        done

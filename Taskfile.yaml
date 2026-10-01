@@ -4,6 +4,7 @@ includes:
   mise: ./.tasks/mise.yaml
   claude: ./.tasks/claude.yaml
   template: ./.tasks/template.yaml
+  images: ./.tasks/images.yaml
 
 tasks:
   init:
@@ -33,16 +34,18 @@ tasks:
         EOF
       - echo "Repo adapted to '{{.NAME}}' (owner '{{.OWNER}}'), review the changes then commit them"
   recu:
-    desc: "Recuring job like regenerating Swagger spec"
+    desc: "Recuring job like regenerating Swagger spec (nothing to regenerate here)"
     cmds:
-      - echo "Your future spec generating cmd"
+      - "true"
 
   lint:
-    desc: "Linting your project to apply good practice"
+    desc: "Lint the GitHub Actions workflows (actionlint + zizmor)"
     cmds:
-      - echo "Something like cargo fmt && cargo clippy"
+      - actionlint
+      - zizmor --offline .github/workflows
 
   audit:
-    desc: "Check dependencies and Containerfile for CVE"
+    desc: "Check the workflows for misconfiguration and the published images for CVE"
     cmds:
-      - echo "Something like cargo audit, pnpm audit or trivy fs ."
+      - trivy config --quiet .github
+      - task: images:scan

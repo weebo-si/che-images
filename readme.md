@@ -1,26 +1,22 @@
-# Weebo base project
+# che-images
 
-This repository is meant to be a template used to bootstrap future projects.
+Builds the weebo-si forks of Eclipse Che and pushes them to GHCR, signed with Sigstore (cosign keyless).
 
-## Eclipse Che
+Project bootstrapped from the [weebo-base](https://github.com/batleforc/weebo-base) template.
 
-Those future projects are built around my way of viewing Eclipse Che and how i work with it. It's not, at least now, how it's commonly viewed.
+| Image | Source |
+|-------|--------|
+| `ghcr.io/weebo-si/che-server` | [weebo-si/che-server](https://github.com/weebo-si/che-server) |
+| `ghcr.io/weebo-si/che-operator` | [weebo-si/che-operator](https://github.com/weebo-si/che-operator) |
+| `ghcr.io/weebo-si/che-dashboard` | [weebo-si/che-dashboard](https://github.com/weebo-si/che-dashboard) |
 
-My view of Eclipse Che includes the usage of [mise](https://mise.jdx.dev/) to describe the packages needed in pair with [Weebo DotFile Che](https://github.com/batleforc/weebo-dotfiles-che) which is the base of all my workspaces.
-
-My custom image can be found [here](https://github.com/batleforc/WeeboDevImage)
-
-## Updating a project bootstrapped from this template
-
-Projects created before a template change catch up with `task template:sync`. It clones this repository into `.task/template`, overwrites the files the template owns, and prints a diff for the files every project customises so you merge those by hand. `task template:diff` shows the same comparison without writing anything.
-
-The list of owned versus reviewed files lives at the top of `.tasks/template.yaml`.
-
-A project that predates the task itself needs the file once:
+## Quick start
 
 ```bash
-mkdir -p .tasks
-curl -fsSL https://raw.githubusercontent.com/batleforc/weebo-base/main/.tasks/template.yaml -o .tasks/template.yaml
-# then add "template: ./.tasks/template.yaml" under includes: in Taskfile.yaml
-task template:sync
+task init                 # tools + git hooks
+task images:build         # trigger a build of feat/forgejo-gitservice
+task images:watch         # follow it
+task images:verify        # check the cosign signatures
 ```
+
+See [docs/readme.md](docs/readme.md) for tags, triggers and CheCluster usage.

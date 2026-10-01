@@ -1,0 +1,137 @@
+name: build
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or SHA to build on every fork"
+        default: feat/forgejo-gitservice
+      platforms:
+        description: "Target platforms (comma-separated)"
+        default: linux/amd64
+  schedule:
+    - cron: "0 3 * * *"
+  push:
+    branches: [main]
+    paths: [.github/workflows/build.yml]
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+  REF: ${{ inputs.ref || 'feat/forgejo-gitservice' }}
+  PLATFORMS: ${{ inputs.platforms || 'linux/amd64' }}
+
+permissions: {}
+
+concurrency:
+  group: build-${{ inputs.ref || 'feat/forgejo-gitservice' }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # cosign keyless signing
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: che-server
+            context: build/dockerfiles
+            file: build/dockerfiles/Dockerfile
+            build-args: ""
+          - name: che-operator
+            context: .
+            file: Dockerfile
+            # unit tests already run in the fork's CI
+            build-args: SKIP_TESTS=true
+          - name: che-dashboard
+            context: .
+            file: build/dockerfiles/Dockerfile
+            build-args: ""
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}
+      SOURCE_REPO: ${{ github.repository_owner }}/${{ matrix.name }}
+    # No build cache on purpose: this workflow publishes images (cache poisoning).
+    steps:
+      - name: Checkout source fork
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: ${{ env.REF }}
+          persist-credentials: false
+
+      - name: Source metadata
+        id: src
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "slug=$(echo "$REF" | tr '/' '-' | tr -cd '[:alnum:]._-')" >> "$GITHUB_OUTPUT"
+
+      # che-server ships a pre-built Tomcat assembly, the Dockerfile only copies it
+      - name: Set up JDK 17
+        if: matrix.name == 'che-server'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Build che-server assembly
+        if: matrix.name == 'che-server'
+        run: |
+          mvn -B clean install -DskipTests -Pfast
+          cp -r assembly/assembly-main/target/eclipse-che-*/eclipse-che-*/ build/dockerfiles/eclipse-che
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        if: env.PLATFORMS != 'linux/amd64'
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ steps.src.outputs.slug }}
+            type=raw,value=sha-${{ steps.src.outputs.short }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ env.SOURCE_REPO }}
+            org.opencontainers.image.revision=${{ steps.src.outputs.sha }}
+
+      - id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: ${{ env.PLATFORMS }}
+          build-args: ${{ matrix.build-args }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Sign image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "$IMAGE@$DIGEST"
+
+      - name: Summary
+        env:
+          SHA: ${{ steps.src.outputs.sha }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          {
+            echo "### $IMAGE"
+            echo "- source: \`$SOURCE_REPO@$SHA\`"
+            echo "- digest: \`$DIGEST\`"
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
