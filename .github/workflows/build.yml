@@ -5,7 +5,7 @@ on:
     inputs:
       ref:
         description: "Branch, tag or SHA to build on every fork"
-        default: feat/forgejo-gitservice
+        default: develop
       platforms:
         description: "Target platforms (comma-separated)"
         default: linux/amd64
@@ -17,13 +17,13 @@ on:
 
 env:
   REGISTRY: ghcr.io/${{ github.repository_owner }}
-  REF: ${{ inputs.ref || 'feat/forgejo-gitservice' }}
+  REF: ${{ inputs.ref || 'develop' }}
   PLATFORMS: ${{ inputs.platforms || 'linux/amd64' }}
 
 permissions: {}
 
 concurrency:
-  group: build-${{ inputs.ref || 'feat/forgejo-gitservice' }}
+  group: build-${{ inputs.ref || 'develop' }}
   cancel-in-progress: true
 
 jobs:

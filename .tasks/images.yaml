@@ -3,13 +3,13 @@ version: "3"
 vars:
   REPO: weebo-si/che-images
   REGISTRY: ghcr.io/weebo-si
-  REF: '{{.REF | default "feat/forgejo-gitservice"}}'
+  REF: '{{.REF | default "develop"}}'
   TAG: '{{.REF | replace "/" "-"}}'
   IMAGES: che-server che-operator che-dashboard
 
 tasks:
   build:
-    desc: "Trigger the image build on GitHub Actions (usage: task images:build [REF=feat/forgejo-gitservice] [PLATFORMS=linux/amd64])"
+    desc: "Trigger the image build on GitHub Actions (usage: task images:build [REF=develop] [PLATFORMS=linux/amd64])"
     cmds:
       - gh workflow run build.yml -R {{.REPO}} -f ref={{.REF}} -f platforms={{.PLATFORMS | default "linux/amd64"}}
       - echo "Follow it with 'task images:watch'"

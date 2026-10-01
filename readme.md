@@ -14,7 +14,7 @@ Project bootstrapped from the [weebo-base](https://github.com/batleforc/weebo-ba
 
 ```bash
 task init                 # tools + git hooks
-task images:build         # trigger a build of feat/forgejo-gitservice
+task images:build         # trigger a build of develop
 task images:watch         # follow it
 task images:verify        # check the cosign signatures
 ```

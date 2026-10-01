@@ -17,19 +17,19 @@ Actions are pinned to commit SHAs (enforced by `task lint` / zizmor).
 
 ## Triggers
 
-- Nightly at 03:00 UTC on `feat/forgejo-gitservice`
+- Nightly at 03:00 UTC on `develop`
 - Push to `main` touching the workflow
 - Manual: `task images:build REF=<ref> PLATFORMS=linux/amd64,linux/arm64`
 
 ## Tags
 
-- `<ref>` with `/` replaced by `-` (default: `feat-forgejo-gitservice`)
+- `<ref>` with `/` replaced by `-` (default: `develop`)
 - `sha-<7 chars>`: commit of the fork that was built
 
 ## Verify a signature
 
 ```bash
-cosign verify ghcr.io/weebo-si/che-server:feat-forgejo-gitservice \
+cosign verify ghcr.io/weebo-si/che-server:develop \
   --certificate-identity-regexp '^https://github.com/weebo-si/che-images/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -42,11 +42,11 @@ spec:
     cheServer:
       deployment:
         containers:
-          - image: ghcr.io/weebo-si/che-server:feat-forgejo-gitservice
+          - image: ghcr.io/weebo-si/che-server:develop
     dashboard:
       deployment:
         containers:
-          - image: ghcr.io/weebo-si/che-dashboard:feat-forgejo-gitservice
+          - image: ghcr.io/weebo-si/che-dashboard:develop
 ```
 
 The operator image replaces the one in the `che-operator` Deployment (Helm `image` value or OLM subscription override).
