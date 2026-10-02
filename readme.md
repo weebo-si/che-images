@@ -20,3 +20,14 @@ task images:verify        # check the cosign signatures
 ```
 
 See [docs/readme.md](docs/readme.md) for tags, triggers and CheCluster usage.
+
+## License
+
+These are **unofficial builds** of [Eclipse Che](https://eclipse.dev/che/), not endorsed by or
+affiliated with the Eclipse Foundation. "Eclipse Che" is a trademark of the Eclipse Foundation.
+
+- The images contain Eclipse Che code under the [Eclipse Public License 2.0](https://www.eclipse.org/legal/epl-2.0/).
+  The source of each image is the fork commit in its `org.opencontainers.image.source` and
+  `org.opencontainers.image.revision` labels (also the `sha-<short>` tag).
+- Third-party components keep their own licenses and notices, as shipped by the upstream builds.
+- The build scripts in this repository are under the [Apache License 2.0](LICENSE.md).
