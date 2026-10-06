@@ -9,6 +9,7 @@ Project bootstrapped from the [weebo-base](https://github.com/batleforc/weebo-ba
 | `ghcr.io/weebo-si/che-server` | [weebo-si/che-server](https://github.com/weebo-si/che-server) |
 | `ghcr.io/weebo-si/che-operator` | [weebo-si/che-operator](https://github.com/weebo-si/che-operator) |
 | `ghcr.io/weebo-si/che-dashboard` | [weebo-si/che-dashboard](https://github.com/weebo-si/che-dashboard) |
+| `ghcr.io/weebo-si/che-code` | [weebo-si/che-code](https://github.com/weebo-si/che-code) |
 
 ## Quick start
 
@@ -29,5 +30,6 @@ affiliated with the Eclipse Foundation. "Eclipse Che" is a trademark of the Ecli
 - The images contain Eclipse Che code under the [Eclipse Public License 2.0](https://www.eclipse.org/legal/epl-2.0/).
   The source of each image is the fork commit in its `org.opencontainers.image.source` and
   `org.opencontainers.image.revision` labels (also the `sha-<short>` tag).
+- `che-code` also contains VS Code (Code-OSS) under the MIT license; its notices ship in the image.
 - Third-party components keep their own licenses and notices, as shipped by the upstream builds.
 - The build scripts in this repository are under the [Apache License 2.0](LICENSE.md).

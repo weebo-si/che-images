@@ -11,6 +11,7 @@
 | che-server | `build/dockerfiles/Dockerfile` | Maven assembly built first (`mvn install -DskipTests -Pfast`), then copied into the context |
 | che-operator | `Dockerfile` | `SKIP_TESTS=true`, tests run in the fork's CI |
 | che-dashboard | `build/dockerfiles/Dockerfile` | |
+| che-code | `build/dockerfiles/assembly.Dockerfile` | Separate jobs, as upstream: `linux-musl`, `linux-libc-ubi8` and `linux-libc-ubi9` are built in parallel, then assembled. `linux/amd64` only |
 
 No build cache is used: the workflow publishes images, so caches are a poisoning vector.
 Actions are pinned to commit SHAs (enforced by `task lint` / zizmor).
@@ -48,6 +49,10 @@ spec:
         containers:
           - image: ghcr.io/weebo-si/che-dashboard:develop
 ```
+
+che-code is not set in the CheCluster: it is the image of the editor definition (the
+`che-code-injector` init container and the editor runtime). Point a custom editor definition at
+`ghcr.io/weebo-si/che-code:develop`.
 
 The operator image replaces the one in the `che-operator` Deployment (Helm `image` value or OLM subscription override).
 

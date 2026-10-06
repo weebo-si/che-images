@@ -5,7 +5,7 @@ vars:
   REGISTRY: ghcr.io/weebo-si
   REF: '{{.REF | default "develop"}}'
   TAG: '{{.REF | replace "/" "-"}}'
-  IMAGES: che-server che-operator che-dashboard
+  IMAGES: che-server che-operator che-dashboard che-code
 
 tasks:
   build:
