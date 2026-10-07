@@ -34,12 +34,12 @@ tasks:
       - |
         dir=$(mktemp -d)
         trap 'rm -rf "$dir"' EXIT
-        gh release download "devspaces-gateway-plugin-{{.TAG}}" -R {{.REPO}} -D "$dir" -p 'devspaces-gateway-plugin.zip*'
-        cosign verify-blob "$dir/devspaces-gateway-plugin.zip" \
-          --bundle "$dir/devspaces-gateway-plugin.zip.sigstore.json" \
+        gh release download "weebo-gateway-plugin-{{.TAG}}" -R {{.REPO}} -D "$dir" -p 'weebo-gateway-plugin.zip*'
+        cosign verify-blob "$dir/weebo-gateway-plugin.zip" \
+          --bundle "$dir/weebo-gateway-plugin.zip.sigstore.json" \
           --certificate-identity-regexp '^https://github.com/{{.REPO}}/' \
           --certificate-oidc-issuer https://token.actions.githubusercontent.com 2>/dev/null \
-          && echo "✔ devspaces-gateway-plugin-{{.TAG}}" || echo "✘ devspaces-gateway-plugin-{{.TAG}}"
+          && echo "✔ weebo-gateway-plugin-{{.TAG}}" || echo "✘ weebo-gateway-plugin-{{.TAG}}"
 
   scan:
     desc: "Scan the published images for HIGH/CRITICAL CVE with trivy (usage: task images:scan [REF=...])"

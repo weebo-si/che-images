@@ -15,7 +15,7 @@ Project bootstrapped from the [weebo-base](https://github.com/batleforc/weebo-ba
 
 | Artifact | Where | Source |
 |----------|-------|--------|
-| JetBrains Gateway plugin (`devspaces-gateway-plugin.zip`) | Release `devspaces-gateway-plugin-<ref>` of this repository | [weebo-si/devspaces-gateway-plugin](https://github.com/weebo-si/devspaces-gateway-plugin) |
+| JetBrains Gateway plugin (`weebo-gateway-plugin.zip`) | Release `weebo-gateway-plugin-<ref>` of this repository | [weebo-si/devspaces-gateway-plugin](https://github.com/weebo-si/devspaces-gateway-plugin) |
 
 ## Quick start
 
@@ -38,7 +38,8 @@ affiliated with the Eclipse Foundation. "Eclipse Che" is a trademark of the Ecli
   `org.opencontainers.image.revision` labels (also the `sha-<short>` tag).
 - `che-code` also contains VS Code (Code-OSS) under the MIT license; its notices ship in the image.
 - The Gateway plugin is EPL-2.0, based on the Red Hat OpenShift Dev Spaces plugin and renamed
-  (own ID, name and vendor) so it is not taken for it. Each release links the fork commit it was
-  built from and ships the license.
+  (own ID, name and vendor, no Red Hat logo) so it is not taken for it. Each release ships the
+  license, the exact source built (`weebo-gateway-plugin-source.tar.gz`) and the third-party
+  notices of the bundled libraries (also inside the plugin jar).
 - Third-party components keep their own licenses and notices, as shipped by the upstream builds.
 - The build scripts in this repository are under the [Apache License 2.0](LICENSE.md).

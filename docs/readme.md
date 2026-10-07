@@ -17,10 +17,12 @@
 
 | Artifact | Build | Published as |
 |----------|-------|--------------|
-| JetBrains Gateway plugin | `./gradlew buildPlugin` (JDK 21) in `weebo-si/devspaces-gateway-plugin` | Pre-release `devspaces-gateway-plugin-<ref>` of this repository, replaced on every build: `devspaces-gateway-plugin.zip`, its cosign bundle `devspaces-gateway-plugin.zip.sigstore.json` and `LICENSE` |
+| JetBrains Gateway plugin | `./gradlew buildPlugin` (JDK 21) in `weebo-si/devspaces-gateway-plugin` | Pre-release `weebo-gateway-plugin-<ref>` of this repository, replaced on every build: `weebo-gateway-plugin.zip`, its cosign bundle `weebo-gateway-plugin.zip.sigstore.json`, the exact source built `weebo-gateway-plugin-source.tar.gz`, `LICENSE`, `THIRD-PARTY-NOTICES.txt` and `THIRD-PARTY-LICENSES.md` |
 
-The plugin's `develop` merges `chore/weebo-branding` (own plugin ID `io.github.weebo-si.gateway`,
-name and vendor). Install it from disk in Gateway, after uninstalling the Red Hat "OpenShift Dev
+The plugin's `develop` merges `chore/weebo-branding`: own plugin ID `io.github.weebo-si.gateway`,
+name and vendor, no Red Hat icon, artifact `weebo-gateway-plugin`, and the third-party notices in
+the jar (`META-INF/third-party`). The source archive is attached because `develop` is force-pushed:
+the commit it was built from can disappear from the fork. Install it from disk in Gateway, after uninstalling the Red Hat "OpenShift Dev
 Spaces" plugin: both handle the same Gateway links.
 
 No build cache is used: the workflow publishes images, so caches are a poisoning vector.
@@ -48,9 +50,9 @@ cosign verify ghcr.io/weebo-si/che-server:develop \
 Plugin:
 
 ```bash
-gh release download devspaces-gateway-plugin-develop -R weebo-si/che-images
-cosign verify-blob devspaces-gateway-plugin.zip \
-  --bundle devspaces-gateway-plugin.zip.sigstore.json \
+gh release download weebo-gateway-plugin-develop -R weebo-si/che-images
+cosign verify-blob weebo-gateway-plugin.zip \
+  --bundle weebo-gateway-plugin.zip.sigstore.json \
   --certificate-identity-regexp '^https://github.com/weebo-si/che-images/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```

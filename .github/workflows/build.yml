@@ -139,15 +139,16 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # JetBrains Gateway plugin: a .zip, not an image. Published as a GitHub pre-release of this
-  # repository (tag `devspaces-gateway-plugin-<ref>`), replaced on every build, signed with cosign.
-  devspaces-gateway-plugin:
-    name: devspaces-gateway-plugin
+  # repository (tag `weebo-gateway-plugin-<ref>`), replaced on every build, signed with cosign.
+  # Built from weebo-si/devspaces-gateway-plugin, whose develop renames it (chore/weebo-branding).
+  weebo-gateway-plugin:
+    name: weebo-gateway-plugin
     runs-on: ubuntu-24.04
     permissions:
       contents: write # GitHub release of this repository
       id-token: write # cosign keyless signing
     env:
-      NAME: devspaces-gateway-plugin
+      NAME: weebo-gateway-plugin
       SOURCE_REPO: ${{ github.repository_owner }}/devspaces-gateway-plugin
     # No build cache on purpose: this workflow publishes artifacts (cache poisoning).
     steps:
@@ -175,6 +176,14 @@ jobs:
         run: |
           ./gradlew --no-daemon --no-build-cache buildPlugin
           cp build/distributions/*.zip "$NAME.zip"
+          cp build/reports/dependency-license/THIRD-PARTY-NOTICES.txt THIRD-PARTY-LICENSES.md .
+
+      # EPL-2.0 §3.2: the source must stay available, but develop is force-pushed and its commits
+      # can disappear from the fork. The exact source built ships with the release.
+      - name: Archive the source
+        env:
+          SHORT: ${{ steps.src.outputs.short }}
+        run: git archive --format=tar.gz --prefix="$NAME-$SHORT/" -o "$NAME-source.tar.gz" HEAD
 
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
       - name: Sign the plugin
@@ -191,13 +200,14 @@ jobs:
           [OpenShift Dev Spaces Gateway plugin](https://github.com/redhat-developer/devspaces-gateway-plugin)
           by Red Hat. Not endorsed by Red Hat or the Eclipse Foundation.
 
-          - Source: [$SOURCE_REPO@$SHA](https://github.com/$SOURCE_REPO/tree/$SHA) (\`$REF\`)
+          - Source: \`$NAME-source.tar.gz\` (exact source built), from [$SOURCE_REPO@$SHA](https://github.com/$SOURCE_REPO/tree/$SHA) (\`$REF\`)
           - License: [EPL-2.0](https://www.eclipse.org/legal/epl-2.0/) (\`LICENSE\`, also in the plugin jar)
+          - Bundled libraries: \`THIRD-PARTY-NOTICES.txt\` and \`THIRD-PARTY-LICENSES.md\` (also in the plugin jar, \`META-INF/third-party\`)
           - Signature: \`$NAME.zip.sigstore.json\`, see the che-images docs to verify it
 
           Install: Gateway → Settings → Plugins → ⚙ → Install Plugin from Disk. Uninstall the Red Hat
           \"OpenShift Dev Spaces\" plugin first: both handle the same Gateway links."
-          files=("$NAME.zip" "$NAME.zip.sigstore.json" LICENSE)
+          files=("$NAME.zip" "$NAME.zip.sigstore.json" "$NAME-source.tar.gz" LICENSE THIRD-PARTY-NOTICES.txt THIRD-PARTY-LICENSES.md)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --notes "$notes"
             gh release upload "$TAG" --clobber "${files[@]}"
