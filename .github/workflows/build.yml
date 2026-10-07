@@ -176,7 +176,7 @@ jobs:
         run: |
           ./gradlew --no-daemon --no-build-cache buildPlugin
           cp build/distributions/*.zip "$NAME.zip"
-          cp build/reports/dependency-license/THIRD-PARTY-NOTICES.txt THIRD-PARTY-LICENSES.md .
+          cp build/reports/dependency-license/THIRD-PARTY-NOTICES.txt .
 
       # EPL-2.0 §3.2: the source must stay available, but develop is force-pushed and its commits
       # can disappear from the fork. The exact source built ships with the release.
