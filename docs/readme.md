@@ -13,6 +13,16 @@
 | che-dashboard | `build/dockerfiles/Dockerfile` | |
 | che-code | `build/dockerfiles/assembly.Dockerfile` | Separate jobs, as upstream: `linux-musl`, `linux-libc-ubi8` and `linux-libc-ubi9` are built in parallel, then assembled. `linux/amd64` only |
 
+### Other artifacts
+
+| Artifact | Build | Published as |
+|----------|-------|--------------|
+| JetBrains Gateway plugin | `./gradlew buildPlugin` (JDK 21) in `weebo-si/devspaces-gateway-plugin` | Pre-release `devspaces-gateway-plugin-<ref>` of this repository, replaced on every build: `devspaces-gateway-plugin.zip`, its cosign bundle `devspaces-gateway-plugin.zip.sigstore.json` and `LICENSE` |
+
+The plugin's `develop` merges `chore/weebo-branding` (own plugin ID `io.github.weebo-si.gateway`,
+name and vendor). Install it from disk in Gateway, after uninstalling the Red Hat "OpenShift Dev
+Spaces" plugin: both handle the same Gateway links.
+
 No build cache is used: the workflow publishes images, so caches are a poisoning vector.
 Actions are pinned to commit SHAs (enforced by `task lint` / zizmor).
 
@@ -31,6 +41,16 @@ Actions are pinned to commit SHAs (enforced by `task lint` / zizmor).
 
 ```bash
 cosign verify ghcr.io/weebo-si/che-server:develop \
+  --certificate-identity-regexp '^https://github.com/weebo-si/che-images/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+Plugin:
+
+```bash
+gh release download devspaces-gateway-plugin-develop -R weebo-si/che-images
+cosign verify-blob devspaces-gateway-plugin.zip \
+  --bundle devspaces-gateway-plugin.zip.sigstore.json \
   --certificate-identity-regexp '^https://github.com/weebo-si/che-images/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```

@@ -22,7 +22,7 @@ tasks:
         gh run watch "$id" -R {{.REPO}} --exit-status
 
   verify:
-    desc: "Verify the cosign signature of every image (usage: task images:verify [REF=...])"
+    desc: "Verify the cosign signature of every image and of the plugin release (usage: task images:verify [REF=...])"
     cmds:
       - |
         for img in {{.IMAGES}}; do
@@ -31,6 +31,15 @@ tasks:
             --certificate-oidc-issuer https://token.actions.githubusercontent.com >/dev/null \
             && echo "✔ $img:{{.TAG}}" || echo "✘ $img:{{.TAG}}"
         done
+      - |
+        dir=$(mktemp -d)
+        trap 'rm -rf "$dir"' EXIT
+        gh release download "devspaces-gateway-plugin-{{.TAG}}" -R {{.REPO}} -D "$dir" -p 'devspaces-gateway-plugin.zip*'
+        cosign verify-blob "$dir/devspaces-gateway-plugin.zip" \
+          --bundle "$dir/devspaces-gateway-plugin.zip.sigstore.json" \
+          --certificate-identity-regexp '^https://github.com/{{.REPO}}/' \
+          --certificate-oidc-issuer https://token.actions.githubusercontent.com 2>/dev/null \
+          && echo "✔ devspaces-gateway-plugin-{{.TAG}}" || echo "✘ devspaces-gateway-plugin-{{.TAG}}"
 
   scan:
     desc: "Scan the published images for HIGH/CRITICAL CVE with trivy (usage: task images:scan [REF=...])"
